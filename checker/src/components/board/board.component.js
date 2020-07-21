@@ -10,9 +10,13 @@ export class Board extends Component {
   // anytime the form value changes we update the state.
   onChange = (e) => {
     e.preventDefault();
-    console.log(e.currentTarget.rows.value);
     const cells = e.currentTarget.rows.value;
-    this.setState({ cells, cell_count: cells * cells, build: false });
+    this.setState({
+      cells,
+      cell_count: cells * cells,
+      build: false,
+      topConfig: { topStart: 1, end: parseInt(cells) + parseInt(cells) },
+    });
   };
   // push all the cells in an array to prepare for render.
   buildCells = (e) => {
@@ -20,21 +24,53 @@ export class Board extends Component {
     const cell_count = this.state.cell_count;
     let allCells = [];
     let id = 1;
-    let color = "black";
+    let color = "";
     while (id <= cell_count) {
       if (allCells.length - 1 !== this.state.cells) {
-        allCells.push(<Cell key={id} color={color} />);
+        allCells.push(
+          <Cell
+            key={id}
+            color={color}
+            pieceColor={
+              id <= this.state.topConfig.end && color === "white"
+                ? "black"
+                : "red"
+            }
+            // if the expression is equal to true render in the piece component with display.
+            display={
+              id <= this.state.topConfig.end &&
+              id % 2 === 0 &&
+              id <= this.state.topConfig.end
+            }
+          />
+        );
       } else {
+        // If the current id #no is <= 'n' return a cell with <hr/> for a new line.
         allCells.push(
           <>
-            <Cell key={id} color={color} />
+            <Cell
+              key={id}
+              color={color}
+              pieceColor={
+                id <= this.state.topConfig.end && color === "white"
+                  ? "black"
+                  : "red"
+              }
+              display={
+                id <= this.state.topConfig.end &&
+                id % 2 === 0 &&
+                id <= this.state.topConfig.end
+              }
+            />
             <hr />
           </>
         );
       }
-      color = color === "black" ? "white" : "black";
+
       id += 1;
+      color = color === "black" ? "white" : "black";
     }
+
     this.setState({ build: true, allCells });
   };
   // render all the cells, call this in the JSX.
@@ -60,8 +96,17 @@ export class Board extends Component {
           <input type="number" name="rows" />
           <button type="submit">build</button>
         </form>
-        <Cell />
-        <div id="board" style={{ width: this.state.cells * 100 }}>
+        <div className="config">
+          <div className="top-config"></div>
+          <div className="bottom-config"></div>
+        </div>
+        <div
+          id="board"
+          style={{
+            width: this.state.cells ? this.state.cells * 100 : 200,
+            marginTop: 10,
+          }}
+        >
           {this.renderCells()}
         </div>
       </div>
